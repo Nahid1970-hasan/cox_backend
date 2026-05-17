@@ -1,9 +1,6 @@
-/**
- * Vercel Serverless Function — all /api/* and /uploads/* traffic is rewritten here (see vercel.json).
- */
-import { createApp } from '../server/src/createApp.js'
 
-/** Reuse Express instance across warm invocations. */
+import { createApp } from '../src/createApp.js'
+
 let appPromise
 
 async function getApp() {

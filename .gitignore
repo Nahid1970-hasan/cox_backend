@@ -2,15 +2,11 @@
 node_modules
 
 # Backend uploads & env
-server/uploads/*
-!server/uploads/.gitkeep
-server/.env
-
-# Build
-dist
-
-# Local env (keep .env.example committed)
+uploads/*
+!uploads/.gitkeep
 .env
+
+# Local env overrides
 .env.local
 .env.*.local
 
