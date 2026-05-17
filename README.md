@@ -14,27 +14,33 @@ node-mysql-backend/
 ├── server.js
 ├── config/
 │   └── db.js
+├── uploads/                 (auto-created on first upload, gitignored)
 ├── routes/
 │   ├── userRoutes.js
 │   ├── projectRoutes.js
 │   ├── clientRoutes.js
 │   ├── blogRoutes.js
 │   ├── invoiceRoutes.js
-│   └── companyInfoRoutes.js
+│   ├── companyInfoRoutes.js
+│   ├── contactRoutes.js
+│   └── uploadRoutes.js
 ├── controllers/
 │   ├── userController.js
 │   ├── projectController.js
 │   ├── clientController.js
 │   ├── blogController.js
 │   ├── invoiceController.js
-│   └── companyInfoController.js
+│   ├── companyInfoController.js
+│   ├── contactController.js
+│   └── uploadController.js
 └── models/
     ├── userModel.js
     ├── projectModel.js
     ├── clientModel.js
     ├── blogModel.js
     ├── invoiceModel.js
-    └── companyInfoModel.js
+    ├── companyInfoModel.js
+    └── contactModel.js
 ```
 
 ## Prerequisites
@@ -191,6 +197,7 @@ curl -X DELETE http://localhost:5000/api/deleteusers/1/
 | address     | VARCHAR(500)    | nullable             |
 | phone_no    | VARCHAR(30)     | nullable             |
 | email       | VARCHAR(150)    | nullable, **unique** |
+| img         | VARCHAR(500)    | nullable (logo / image URL) |
 | is_active   | TINYINT(1)      | default `1` (used by public dashboard) |
 | created_at  | TIMESTAMP       | default `now()`      |
 | updated_at  | TIMESTAMP       | auto-updated         |
@@ -250,6 +257,20 @@ curl -X DELETE http://localhost:5000/api/deleteusers/1/
 | is_active     | TINYINT(1)      | default `1`          |
 | created_at    | TIMESTAMP       | default `now()`      |
 | updated_at    | TIMESTAMP       | auto-updated         |
+
+## Database Schema – `contacts`
+
+| Column      | Type            | Notes                |
+| ----------- | --------------- | -------------------- |
+| contact_id  | INT, PK, AUTO_INCREMENT |              |
+| name        | VARCHAR(150)    | required             |
+| email       | VARCHAR(150)    | required             |
+| phone       | VARCHAR(30)     | nullable             |
+| subject     | VARCHAR(255)    | nullable             |
+| message     | TEXT            | required             |
+| is_read     | TINYINT(1)      | default `0`          |
+| created_at  | TIMESTAMP       | default `now()`      |
+| updated_at  | TIMESTAMP       | auto-updated         |
 
 ## Project Endpoints
 
@@ -521,6 +542,111 @@ curl -X PATCH http://localhost:5000/api/update_companyinfo/1/ \
   -d "{\"phone\":\"+8801999999999\"}"
 
 curl -X DELETE http://localhost:5000/api/delete_companyinfo/1/
+```
+
+## Contact Endpoints
+
+Base URL: `http://localhost:5000`
+
+| Method | Endpoint                              | Description                          |
+| ------ | ------------------------------------- | ------------------------------------ |
+| GET    | `/api/contacts/`                      | List all contact submissions         |
+| POST   | `/api/contacts/`                      | Submit a contact form                |
+| GET    | `/api/save_contacts/`                 | List all contact submissions         |
+| POST   | `/api/save_contacts/`                 | Submit a contact form (alias)        |
+| DELETE | `/api/delete_contacts/:contactId/`    | Delete a contact submission          |
+
+### Contact request body
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "phone": "+8801712345678",
+  "subject": "Inquiry about hotel booking",
+  "message": "Hi, I'd like to know your room rates for July."
+}
+```
+
+`name`, `email`, and `message` are required.
+
+### Examples
+
+```bash
+curl -X POST http://localhost:5000/api/save_contacts/ \
+  -H "Content-Type: application/json" \
+  -d "{\"name\":\"John\",\"email\":\"john@example.com\",\"subject\":\"Hi\",\"message\":\"Hello there\"}"
+
+curl http://localhost:5000/api/contacts/
+
+curl -X DELETE http://localhost:5000/api/delete_contacts/1/
+```
+
+## File Upload Endpoints
+
+Files are saved to `./uploads/` on disk and served statically at `http://localhost:5000/uploads/<filename>`.
+
+| Method | Endpoint                | Description                                          |
+| ------ | ----------------------- | ---------------------------------------------------- |
+| POST   | `/api/upload/`          | Upload **one** file (form field name: `file`)        |
+| POST   | `/api/upload/multiple/` | Upload up to **10** files (form field name: `files`) |
+
+- Max file size: **10 MB** per file
+- Sent as `multipart/form-data`
+- Returns the uploaded file's public URL — use that URL as the value of `img`/`logo` when creating/updating projects, blogs, clients, or company info.
+
+### Single upload response
+
+```json
+{
+  "success": true,
+  "data": {
+    "filename": "logo-1715942400000-123456789.png",
+    "originalname": "logo.png",
+    "mimetype": "image/png",
+    "size": 24576,
+    "path": "/uploads/logo-1715942400000-123456789.png",
+    "url": "http://localhost:5000/uploads/logo-1715942400000-123456789.png"
+  }
+}
+```
+
+### Examples
+
+Upload a single image:
+
+```bash
+curl -X POST http://localhost:5000/api/upload/ \
+  -F "file=@./logo.png"
+```
+
+Upload multiple files:
+
+```bash
+curl -X POST http://localhost:5000/api/upload/multiple/ \
+  -F "files=@./pic1.jpg" \
+  -F "files=@./pic2.jpg"
+```
+
+### Use the uploaded URL across resources
+
+After uploading, take the returned `url` and put it in any of these fields:
+
+| Resource       | Field name | Endpoint to update                         |
+| -------------- | ---------- | ------------------------------------------ |
+| Project        | `img`      | `POST /api/add_project/` or `PATCH /api/update_project/:id/` |
+| Blog           | `img`      | `POST /api/add_blog/` or `PATCH /api/update_blog/:id/` |
+| Client         | `img`      | `POST /api/add_client/` or `PATCH /api/update_client/:id/` |
+| Company info   | `logo`     | `POST /api/add_companyinfo/` or `PATCH /api/update_companyinfo/:id/` |
+
+Two-step example (upload then attach to a blog):
+
+```bash
+URL=$(curl -s -X POST http://localhost:5000/api/upload/ -F "file=@./cover.png" | jq -r '.data.url')
+
+curl -X POST http://localhost:5000/api/add_blog/ \
+  -H "Content-Type: application/json" \
+  -d "{\"title\":\"Beach guide\",\"img\":\"$URL\",\"author\":\"Nahid\"}"
 ```
 
 ## Response Shape

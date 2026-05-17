@@ -56,6 +56,7 @@ const db = pool.promise();
         address VARCHAR(500) DEFAULT NULL,
         phone_no VARCHAR(30) DEFAULT NULL,
         email VARCHAR(150) DEFAULT NULL,
+        img VARCHAR(500) DEFAULT NULL,
         is_active TINYINT(1) NOT NULL DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -88,6 +89,20 @@ const db = pool.promise();
         website VARCHAR(255) DEFAULT NULL,
         about TEXT,
         is_active TINYINT(1) NOT NULL DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS contacts (
+        contact_id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(150) NOT NULL,
+        email VARCHAR(150) NOT NULL,
+        phone VARCHAR(30) DEFAULT NULL,
+        subject VARCHAR(255) DEFAULT NULL,
+        message TEXT NOT NULL,
+        is_read TINYINT(1) NOT NULL DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )

@@ -1,7 +1,7 @@
 const db = require("../config/db");
 
 const FIELDS =
-  "client_id, client_name, address, phone_no, email, is_active, created_at, updated_at";
+  "client_id, client_name, address, phone_no, email, img, is_active, created_at, updated_at";
 
 const ClientModel = {
   async findAll() {
@@ -34,15 +34,16 @@ const ClientModel = {
     return rows[0];
   },
 
-  async create({ client_name, address, phone_no, email, is_active }) {
+  async create({ client_name, address, phone_no, email, img, is_active }) {
     const [result] = await db.query(
-      `INSERT INTO clients (client_name, address, phone_no, email, is_active)
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO clients (client_name, address, phone_no, email, img, is_active)
+       VALUES (?, ?, ?, ?, ?, ?)`,
       [
         client_name,
         address ?? null,
         phone_no ?? null,
         email ?? null,
+        img ?? null,
         is_active ?? 1,
       ]
     );
@@ -50,7 +51,7 @@ const ClientModel = {
   },
 
   async update(clientId, fields) {
-    const allowed = ["client_name", "address", "phone_no", "email", "is_active"];
+    const allowed = ["client_name", "address", "phone_no", "email", "img", "is_active"];
     const updates = [];
     const values = [];
 

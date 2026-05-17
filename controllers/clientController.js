@@ -45,7 +45,7 @@ exports.getClientById = async (req, res) => {
 
 exports.createClient = async (req, res) => {
   try {
-    const { client_name, address, phone_no, email, is_active } = req.body;
+    const { client_name, address, phone_no, email, img, is_active } = req.body;
 
     if (!client_name) {
       return res
@@ -72,6 +72,7 @@ exports.createClient = async (req, res) => {
       address,
       phone_no,
       email,
+      img,
       is_active: is_active === undefined ? 1 : is_active ? 1 : 0,
     });
 
@@ -91,7 +92,7 @@ exports.updateClient = async (req, res) => {
         .json({ success: false, message: "Client not found" });
     }
 
-    const { client_name, address, phone_no, email, is_active } = req.body;
+    const { client_name, address, phone_no, email, img, is_active } = req.body;
 
     if (email !== undefined && email !== null && email !== "" && !isValidEmail(email)) {
       return res
@@ -104,6 +105,7 @@ exports.updateClient = async (req, res) => {
     if (address !== undefined) fields.address = address;
     if (phone_no !== undefined) fields.phone_no = phone_no;
     if (email !== undefined) fields.email = email || null;
+    if (img !== undefined) fields.img = img;
     if (is_active !== undefined) fields.is_active = is_active ? 1 : 0;
 
     const updated = await ClientModel.update(clientId, fields);

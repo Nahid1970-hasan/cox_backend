@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -10,12 +11,16 @@ const clientRoutes = require("./routes/clientRoutes");
 const blogRoutes = require("./routes/blogRoutes");
 const invoiceRoutes = require("./routes/invoiceRoutes");
 const companyInfoRoutes = require("./routes/companyInfoRoutes");
+const contactRoutes = require("./routes/contactRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
   res.json({
@@ -30,6 +35,8 @@ app.use("/api", clientRoutes);
 app.use("/api", blogRoutes);
 app.use("/api", invoiceRoutes);
 app.use("/api", companyInfoRoutes);
+app.use("/api", contactRoutes);
+app.use("/api", uploadRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "Route not found" });
