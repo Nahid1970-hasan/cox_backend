@@ -12,6 +12,13 @@ export function getMysqlPoolOptions() {
   }
 }
 
+function mysqlSslOption() {
+  if (process.env.MYSQL_SSL === '1' || process.env.MYSQL_SSL === 'true') {
+    return { rejectUnauthorized: false }
+  }
+  return undefined
+}
+
 export function createPool() {
   const opts = getMysqlPoolOptions()
   return mysql.createPool({
@@ -22,5 +29,6 @@ export function createPool() {
     database: opts.database,
     waitForConnections: true,
     connectionLimit: 10,
+    ssl: mysqlSslOption(),
   })
 }
