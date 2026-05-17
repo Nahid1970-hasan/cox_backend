@@ -133,7 +133,11 @@ function rowCompany(row) {
 }
 
 export function createUploadRoot() {
-  const uploadRoot = path.join(process.cwd(), 'uploads')
+  const useTmp =
+    process.env.UPLOAD_TMP === '1' || process.env.VERCEL === '1'
+  const uploadRoot = useTmp
+    ? path.join('/tmp', 'cox-uploads')
+    : path.join(process.cwd(), 'uploads')
   fs.mkdirSync(uploadRoot, { recursive: true })
   return uploadRoot
 }
@@ -151,6 +155,14 @@ export function createApiRouter(pool) {
   })
   const uploadFile = multer({ storage, limits: { fileSize: 15 * 1024 * 1024 } })
   const uploadNone = multer().none()
+
+  router.get('/api/ping', (_req, res) => {
+    res.json({
+      ok: true,
+      service: 'cox-solution-api',
+      login_post: '/api/users/login/',
+    })
+  })
 
   router.post(
     '/api/users/login',

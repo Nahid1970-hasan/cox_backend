@@ -46,14 +46,28 @@ The app calls a **Node/MySQL API** (`server/`). Set the base URL in `.env`:
    ```
 3. **Production:** use your deployed backend (no trailing slash), e.g.:
    ```
-   VITE_API_BASE_URL=https://cox-solution-api.vercel.app
+   VITE_API_BASE_URL=https://cox-backend.vercel.app
    ```
 
-On **Vercel** (frontend), add `VITE_API_BASE_URL=https://cox-solution-api.vercel.app` under Project → Settings → Environment Variables and rebuild.
+On **Vercel** (frontend), add `VITE_API_BASE_URL=https://cox-backend.vercel.app` under Project → Settings → Environment Variables and rebuild.
 
-On **Vercel** (backend API), set `PUBLIC_BASE_URL=https://cox-solution-api.vercel.app`, `JWT_SECRET`, MySQL vars, and `FRONTEND_ORIGIN` to your live admin URL (e.g. `https://cox-solution-admin.vercel.app`) — see `server/.env.example`.
+On **Vercel** (this repo / API), add `PUBLIC_BASE_URL=https://cox-backend.vercel.app`, a strong **`JWT_SECRET`**, your **`MYSQL_*`** connection (must be a reachable host such as Railway / PlanetScale / Aiven — not `127.0.0.1`), and **`FRONTEND_ORIGIN`** with your admin site (comma-separated). See `server/.env.example`.
 
-Restart the dev server after changing `.env`.
+### Deploy backend on Vercel (fixes 404 on `/api/users/login`)
+
+Vercel only served the static **Vite** build before, so **`/api/...`** returned **404**.
+
+This repo adds:
+
+- `api/index.js` — Express app exposed as one serverless handler  
+- `vercel.json` — rewrites **`/api/*`** and **`/uploads/*`** to that function  
+
+After redeploy:
+
+- **Smoke test:** `GET https://cox-backend.vercel.app/api/ping` → JSON `{ "ok": true, ... }`  
+- **Login:** `POST https://cox-backend.vercel.app/api/users/login/` (same body as locally)
+
+Uploaded files use **`/tmp`** on Vercel (`VERCEL=1`). For durable files in production use object storage later.
 
 Use `apiUrl('/api/...')` from `src/config/env.js` for any API path so it uses this base URL.
 
