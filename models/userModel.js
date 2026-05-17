@@ -27,6 +27,14 @@ const UserModel = {
     return rows[0];
   },
 
+  async findByEmailWithPassword(email) {
+    const [rows] = await db.query(
+      `SELECT ${PUBLIC_FIELDS}, password FROM users WHERE email = ?`,
+      [email]
+    );
+    return rows[0];
+  },
+
   async create({ name, email, password, phone, age, role, is_active }) {
     const [result] = await db.query(
       `INSERT INTO users (name, email, password, phone, age, role, is_active)

@@ -582,6 +582,74 @@ curl http://localhost:5000/api/contacts/
 curl -X DELETE http://localhost:5000/api/delete_contacts/1/
 ```
 
+## Authentication
+
+JWT-based auth. The default admin is auto-created from `.env` on first startup.
+
+### Default credentials (change in `.env`)
+
+| Field    | Value                       |
+| -------- | --------------------------- |
+| Email    | `admin@coxsolution.com`     |
+| Password | `admin123`                  |
+
+### Auth endpoints
+
+| Method | Endpoint                            | Auth   | Description                       |
+| ------ | ----------------------------------- | ------ | --------------------------------- |
+| POST   | `/api/login`                        | none   | Login (alias: `/api/auth/login`, `/api/signin`) |
+| POST   | `/api/register`                     | none   | Register a new user (alias: `/api/auth/register`, `/api/signup`) |
+| GET    | `/api/me`                           | Bearer | Current logged-in user (alias: `/api/auth/me`, `/api/profile`) |
+| POST   | `/api/logout`                       | none   | Stateless — client just discards token |
+
+### Login request
+
+```json
+{ "email": "admin@coxsolution.com", "password": "admin123" }
+```
+
+`username` is also accepted as an alias for `email`:
+
+```json
+{ "username": "admin@coxsolution.com", "password": "admin123" }
+```
+
+### Login response
+
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....",
+  "data": {
+    "id": 1,
+    "name": "Admin",
+    "email": "admin@coxsolution.com",
+    "role": "admin",
+    "is_active": 1
+  }
+}
+```
+
+### Calling protected routes
+
+Send the token as `Authorization: Bearer <token>`:
+
+```bash
+curl http://localhost:5000/api/me \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."
+```
+
+## CORS
+
+Configured via `CORS_ORIGINS` in `.env` (comma-separated allowlist):
+
+```env
+CORS_ORIGINS=https://cox-solution-admin.vercel.app,http://localhost:3000,http://localhost:5173,http://localhost:8080
+```
+
+The Vercel admin frontend (`https://cox-solution-admin.vercel.app`) is allowed by default. Add more origins by editing `.env` and restarting the server. Use `*` to allow all origins (not recommended for production).
+
 ## File Upload Endpoints
 
 Files are saved to `./uploads/` on disk and served statically at `http://localhost:5000/uploads/<filename>`.

@@ -1,4 +1,5 @@
 const mysql = require("mysql2");
+const bcrypt = require("bcryptjs");
 require("dotenv").config();
 
 const pool = mysql.createPool({
@@ -14,8 +15,29 @@ const pool = mysql.createPool({
 
 const db = pool.promise();
 
-(async () => {
+const ensureDatabase = async () => {
+  const adminPool = mysql.createPool({
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    waitForConnections: true,
+    connectionLimit: 1,
+  });
+  const admin = adminPool.promise();
   try {
+    await admin.query(
+      `CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME}\`
+       CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+    );
+  } finally {
+    await admin.end();
+  }
+};
+
+const initDb = async () => {
+  try {
+    await ensureDatabase();
     const connection = await db.getConnection();
     console.log(
       `MySQL connected: ${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`
@@ -134,10 +156,30 @@ const db = pool.promise();
     `);
 
     connection.release();
+    await seedAdmin();
   } catch (err) {
     console.error("MySQL connection failed:", err.message);
-    process.exit(1);
+    throw err;
   }
-})();
+};
+
+const seedAdmin = async () => {
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+  const name = process.env.ADMIN_NAME || "Admin";
+  if (!email || !password) return;
+
+  const [rows] = await db.query("SELECT id FROM users WHERE email = ?", [email]);
+  if (rows.length > 0) return;
+
+  const hashed = await bcrypt.hash(password, 10);
+  await db.query(
+    `INSERT INTO users (name, email, password, role, is_active)
+     VALUES (?, ?, ?, 'admin', 1)`,
+    [name, email, hashed]
+  );
+  console.log(`Seeded default admin: ${email}`);
+};
 
 module.exports = db;
+module.exports.initDb = initDb;

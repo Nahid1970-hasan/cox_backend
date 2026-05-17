@@ -8,7 +8,27 @@ const {
   updateUser,
   updateUserRole,
   deleteUser,
+  login,
+  register,
+  me,
+  logout,
 } = require("../controllers/userController");
+const { protect } = require("../middleware/authMiddleware");
+
+router.post("/login", login);
+router.post("/auth/login", login);
+router.post("/signin", login);
+
+router.post("/register", register);
+router.post("/auth/register", register);
+router.post("/signup", register);
+
+router.get("/me", protect, me);
+router.get("/auth/me", protect, me);
+router.get("/profile", protect, me);
+
+router.post("/logout", logout);
+router.post("/auth/logout", logout);
 
 router
   .route("/dashboarduser")
