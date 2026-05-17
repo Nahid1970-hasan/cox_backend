@@ -6,7 +6,7 @@ const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL
 const API_BASE_URL =
   RAW_API_BASE != null && String(RAW_API_BASE).trim()
     ? String(RAW_API_BASE).trim()
-    : 'https://cox-solution-api.vercel.app'
+    : 'https://cox-backend.vercel.app/'
 /**
  * Build full backend URL for an API path.
  * Use this for every request to the backend (login, etc.).
