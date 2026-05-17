@@ -32,18 +32,31 @@ npm run preview
 
 Build output is in the `dist` folder.
 
-## Connecting to Django backend
+## Connecting to the API (login + dashboards)
 
-The app talks to a Django backend for login and other API calls.
+The app calls a **Node/MySQL API** (`server/`). Set the base URL in `.env`:
 
-1. Copy the example env file and set your Django API base URL:
+1. Copy the example env file:
    ```bash
    cp .env.example .env
    ```
-2. Edit `.env` and set `VITE_API_BASE_URL` to your Django server (no trailing slash), e.g.:
+2. **Local:** point at your running API (default port is `8000`):
    ```
-   VITE_API_BASE_URL=http://localhost:8000
+   VITE_API_BASE_URL=http://127.0.0.1:8000
    ```
-3. Restart the dev server after changing `.env`.
+3. **Production:** use your deployed backend (no trailing slash), e.g.:
+   ```
+   VITE_API_BASE_URL=https://cox-backend.vercel.app
+   ```
+
+On **Vercel** (frontend), add `VITE_API_BASE_URL=https://cox-backend.vercel.app` under Project → Settings → Environment Variables and rebuild.
+
+On **Vercel** (backend), set `PUBLIC_BASE_URL=https://cox-backend.vercel.app`, `JWT_SECRET`, MySQL vars, and `FRONTEND_ORIGIN` to your live admin URL (e.g. `https://cox-solution-admin.vercel.app`) — see `server/.env.example`.
+
+Restart the dev server after changing `.env`.
 
 Use `apiUrl('/api/...')` from `src/config/env.js` for any API path so it uses this base URL.
+
+### Legacy note
+
+Older docs referenced Django — this repo expects the Express API under `server/`.
