@@ -1,6 +1,27 @@
-node_modules/
+# Dependencies
+node_modules
+
+# Backend uploads & env
+server/uploads/*
+!server/uploads/.gitkeep
+server/.env
+
+# Build
+dist
+
+# Local env (keep .env.example committed)
 .env
-npm-debug.log
-.DS_Store
+.env.local
+.env.*.local
+
+# Logs
 *.log
-uploads/
+npm-debug.log*
+
+# Editor
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
