@@ -1,0 +1,9 @@
+# Render blueprint — attach your MySQL DATABASE_URL / MYSQL_* in the dashboard.
+services:
+  - type: web
+    name: cox-solution-api
+    runtime: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/ping

@@ -25,7 +25,7 @@ async function seedAdminIfEmpty(pool) {
   )
 }
 
-/** Single Express instance for local server + Vercel serverless. */
+/** Single Express instance for local server + Vercel serverless + Render Node web service. */
 export async function createApp() {
   await prepareDatabase()
   const pool = createPool()

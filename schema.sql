@@ -1,17 +1,3 @@
--- mysql -u USER -p < schema.sql
---
--- Tables ↔ src/config/env.js (API_PATHS):
---   users          → LOGIN, USER_ME, USERS_LIST, DASHBOARD_USERS, SUPERADMIN_DASHBOARD,
---                    userDetail, allUserDetail, ADD_USERS, updateUser, updateUserRole, deleteUser
---   projects       → PROJECTS_LIST, projectDetail, ADD_PROJECT, updateProject, deleteProject,
---                    PROJECTS_PUBLIC_LIST
---   blogs          → BLOGS_LIST, blogDetail, ADD_BLOG, updateBlog, deleteBlog
---   contacts       → SAVE_CONTACTS, CONTACTS_LIST, deleteContact
---   invoices       → INVOICES_LIST, invoiceDetail, invoiceGenerate, ADD_INVOICE,
---                    updateInvoice, deleteInvoice
---   companyinfo    → COMPANYINFO_LIST, companyinfoDetail, ADD_COMPANYINFO,
---                    updateCompanyInfo, deleteCompanyInfo
---   (filesystem)   → UPLOAD (JWT required; files under uploads/, URL /uploads/…)
 
 CREATE DATABASE IF NOT EXISTS cox_solution CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE cox_solution;

@@ -1,6 +1,6 @@
 /**
  * Vercel Serverless — see vercel.json rewrites.
- * Never throw uncaught: return JSON so the dashboard shows a message instead of a blank 500.
+ * Startup errors return JSON with the real message so you can fix env without reading logs only.
  */
 import { createApp } from '../src/createApp.js'
 
@@ -16,23 +16,30 @@ async function getApp() {
   return appPromise
 }
 
+function serializeErr(err) {
+  const body = {
+    detail: err.message || String(err),
+    code: err.code,
+    errno: err.errno,
+    sqlState: err.sqlState,
+    sqlMessage: err.sqlMessage,
+    hint:
+      'Set DATABASE_URL or MYSQL_* (never localhost on Vercel/Render). TLS defaults ON there; MYSQL_SSL=0 disables.',
+  }
+  if (process.env.API_DEBUG_ERRORS === '1') {
+    body.stack = err.stack
+  }
+  return body
+}
+
 export default async function handler(req, res) {
   try {
     const app = await getApp()
     return app(req, res)
   } catch (err) {
     console.error('[api] createApp failed:', err)
-    const safe =
-      process.env.VERCEL_ENV === 'production' && !process.env.API_DEBUG_ERRORS
-        ? 'Server failed to start. Check Vercel logs and MySQL env vars (MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE, MYSQL_SSL).'
-        : err.message || String(err)
     if (!res.headersSent) {
-      return res.status(503).json({
-        detail: safe,
-        code: err.code || undefined,
-        hint:
-          'Use a hosted MySQL (PlanetScale, Railway, Aiven). On Vercel, MYSQL_HOST cannot be 127.0.0.1. Try MYSQL_SSL=1.',
-      })
+      return res.status(503).json(serializeErr(err))
     }
   }
 }

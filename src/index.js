@@ -1,8 +1,16 @@
 import http from 'http'
 import { createApp } from './createApp.js'
 
+function runningOnRender() {
+  return process.env.RENDER === 'true' || process.env.RENDER === '1'
+}
+
 const preferredPort = parseInt(process.env.PORT || '8000', 10)
 const maxAttempts = 10
+/** Render / Docker must listen on all interfaces; local dev sticks to localhost. */
+const listenHost =
+  process.env.LISTEN_HOST ||
+  (runningOnRender() ? '0.0.0.0' : '127.0.0.1')
 
 try {
   const app = await createApp()
@@ -28,13 +36,23 @@ try {
     }
 
     server.once('error', onErr)
-    server.listen(p, '127.0.0.1', () => {
+    server.listen(p, listenHost, () => {
       server.removeListener('error', onErr)
-      console.info(`API listening on http://127.0.0.1:${p}`)
+      console.info(`API listening on http://${listenHost}:${p}`)
     })
   }
 
-  tryListen(preferredPort, 1)
+  if (runningOnRender()) {
+    server.once('error', (err) => {
+      console.error(err)
+      process.exit(1)
+    })
+    server.listen(preferredPort, listenHost, () => {
+      console.info(`API listening on http://${listenHost}:${preferredPort}`)
+    })
+  } else {
+    tryListen(preferredPort, 1)
+  }
 } catch (e) {
   if (e.code === 'ECONNREFUSED') {
     console.error(
