@@ -59,6 +59,7 @@ On first boot (unless `SKIP_DB_BOOTSTRAP=true`), **`schema.sql`** is applied and
 
 ## Render
 
+- **Start command:** **`npm start`** or **`node index.js`**. (`src/server.js` is a shim for dashboards that auto-set **`node src/server.js`**.)
 - Optional **`render.yaml`** blueprint (`npm install` → `npm start`, health **`/api/ping`**).
 - Use **hosted MySQL** — prefer **`DATABASE_URL`**. Database must already exist (no `CREATE DATABASE` on Render, same pattern as Vercel).
 - Set **`JWT_SECRET`**, **`PUBLIC_BASE_URL`** (`https://your-service.onrender.com`), **`FRONTEND_ORIGIN`** (your SPA).
